@@ -1,0 +1,126 @@
+<!doctype html>
+<title>ToDoアプリケーション</title>
+<script src="./mithril.min.js"></script>
+<script>
+//このアプリケーションは、todoコンポーネントを1つだけ持つ
+
+//--Model
+// ビジネスロジックのカプセル化
+var todo = {};
+
+// Todoクラスはプロパティを2つ持つ
+todo.Todo = function(data) {
+    this.description = m.prop(data.description);
+    this.done = m.prop(false);
+};
+
+// TodoListクラスはtodoの配列
+todo.TodoList = Array;
+
+
+
+//var myTask = new todo.Todo({description: "コードを書く"});
+//
+//// descriptionを取得
+//myTask.description(); //コードを書く
+//
+//// 完了しているか
+//var isDone = myTask.done();// false
+//
+//// 完了にする
+//myTask.done(true);
+//
+//isDone = myTask.done();// true
+
+
+
+//--ViewModel定義
+// UI状態に関するロジックのカプセル化
+// Todoのリストを管理し、
+// 作成が完了する前のTodoの説明を格納したり、
+// 作成が可能かどうかを判定するロジックや、
+// Todoが追加された後にテキスト入力をクリアする責務を持つ
+todo.vm = {
+    init: function() {
+        // アクティブなTodoのリスト
+        todo.vm.list = new todo.TodoList();
+
+        // 新しいTodoを作成する前の、入力中のTodoの名前を保持するスロット
+        todo.vm.description = m.prop('');
+
+        // Todoをリストに登録し、ユーザーが使いやすいようにdescriptionフィールドをクリアする
+        todo.vm.add = function(description) {
+            if (description()) {
+                todo.vm.list.push(new todo.Todo({description: description()}));
+                todo.vm.description("");
+            }
+        };
+    }
+};
+
+////--how to use vm
+//// ViewModelの初期化
+//todo.vm.init();
+//
+//todo.vm.description();// [空文字列]
+//
+//// Todoを登録してみる
+//todo.vm.add(todo.vm.description);
+//todo.vm.list.length;// 空のdescriptionは登録できないので、0
+//
+//// 正しく登録
+//todo.vm.description("use mithril")
+//todo.vm.add(todo.vm.description);
+//todo.vm.list.length;// 1
+
+
+
+//-- Controller
+// Modelの中から現在の表示されているものを切り出して表示する
+todo.controller = function() {
+    todo.vm.init()
+}
+
+
+
+//-- View
+// m()というユーティリティ関数はvirtual DOMの要素を作成する
+todo.view = function() {
+    return m("html", [
+        m("body", [
+            //m("input"),
+            m("input", {onchange: m.withAttr("value", todo.vm.description), value: todo.vm.description()}),
+            m("button", "追加"),
+            m("table", [
+                m("tr", [
+                    m("td", [
+                        m("input[type=checkbox]")
+                    ]),
+                    m("td", "タスクの説明"),
+                ])
+            ])
+        ])
+    ]);
+};
+
+//-- 表示したいとき
+// m.renderは1回だけ描写するときに使い、自動描画システムを利用するときは使用しない。
+// 自動描画システムを利用する場合はm.mountを使ってtodoコンポーネントを初期化するか、m.routeを使ってrouteを定義する必要がある。
+//m.render(document, todo.view());
+
+
+//-- データバインディング
+// DOM要素とjsの変数を結びつけて、片方の変更をもう片方に反映させるもの
+// Modelの値と、テンプレート内のテキスト入力を結びつける
+//m("input", {value: todo.vm.description()});
+
+todo.vm.init();
+
+todo.vm.description();// 空文字列
+m.render(document, todo.view());// テキスト入力もブランク
+
+todo.vm.description("コードを書く");
+console.log(todo.vm.description());// ViewModelのdescriptionに値を設定
+m.render(document, todo.view());// テキスト入力に「コードを書く」が表示される
+
+</script>
